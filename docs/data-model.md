@@ -13,7 +13,7 @@ El objetivo del documento es definir la estructura de datos necesaria para sopor
 # 2. Modelo Entidad-Relación
 
 <p align="center">
-  <img src="images/Mer.png" width="900">
+  <img src="images/Mer.jpg" width="900">
 </p>
 
 <p align="center">
