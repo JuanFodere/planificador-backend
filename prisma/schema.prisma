@@ -1,8 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -10,5 +8,112 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id              Int       @id @default(autoincrement())
+  usuario         String    @unique @db.VarChar(50)
+  passwordHash    String    @db.VarChar(255)
+  rol             String    @db.VarChar(20)
+
+  planes          Plan[]
+  actividades     Actividad[]
+  comentarios     Comentario[]
+  likes           Like[]
+
+  @@map("usuarios")
+}
+
+model Plan {
+  id              Int       @id @default(autoincrement())
+  nombre          String    @db.VarChar(100)
+  fechaDesde      DateTime  @db.Date
+  fechaHasta      DateTime  @db.Date
+  usuarioId       Int
+
+  usuario         Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  actividades     PlanActividad[]
+  publicacion     Publicacion?
+
+  @@map("planes")
+}
+
+model Prefectura {
+  id              Int       @id @default(autoincrement())
+  nombre          String    @unique @db.VarChar(100)
+
+  actividades     Actividad[]
+
+  @@map("prefecturas")
+}
+
+model Actividad {
+  id              Int       @id @default(autoincrement())
+  nombre          String    @db.VarChar(100)
+  duracion        Int
+  costo           Decimal   @db.Decimal(10, 2)
+  direccion       String    @db.VarChar(255)
+  latitud         Decimal   @db.Decimal(9, 6)
+  longitud        Decimal   @db.Decimal(9, 6)
+  imagen          String?   @db.VarChar(255)
+  descripcion     String?   @db.Text
+  categoria       String    @db.VarChar(50)
+  esGlobal        Boolean   @default(false)
+  prefecturaId    Int
+  usuarioId       Int?
+
+  prefectura      Prefectura @relation(fields: [prefecturaId], references: [id], onDelete: Cascade)
+  usuario         Usuario?   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  planes          PlanActividad[]
+
+  @@map("actividades")
+}
+
+model PlanActividad {
+  planId          Int
+  actividadId     Int
+  fecha           DateTime  @db.Date
+  horaDesde       DateTime  @db.Time
+  horaHasta       DateTime  @db.Time
+
+  plan            Plan      @relation(fields: [planId], references: [id], onDelete: Cascade)
+  actividad       Actividad @relation(fields: [actividadId], references: [id], onDelete: Cascade)
+
+  @@id([planId, actividadId, fecha, horaDesde])
+  @@map("plan_actividades")
+}
+
+model Publicacion {
+  id              Int       @id @default(autoincrement())
+  planId          Int       @unique
+
+  plan            Plan      @relation(fields: [planId], references: [id], onDelete: Cascade)
+  comentarios     Comentario[]
+  likes           Like[]
+
+  @@map("publicaciones")
+}
+
+model Comentario {
+  id              Int       @id @default(autoincrement())
+  contenido       String    @db.Text
+  usuarioId       Int
+  publicacionId   Int
+
+  usuario         Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  publicacion     Publicacion @relation(fields: [publicacionId], references: [id], onDelete: Cascade)
+
+  @@map("comentarios")
+}
+
+model Like {
+  usuarioId       Int
+  publicacionId   Int
+
+  usuario         Usuario   @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  publicacion     Publicacion @relation(fields: [publicacionId], references: [id], onDelete: Cascade)
+
+  @@id([usuarioId, publicacionId])
+  @@map("likes")
 }
