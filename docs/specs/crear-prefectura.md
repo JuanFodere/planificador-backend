@@ -67,7 +67,7 @@ Responsabilidad:
 ## Models
 
 ```text
-prefecture.model.ts
+schema.prisma
 ```
 
 # 6. Endpoints involucrados
